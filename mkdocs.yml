@@ -1,0 +1,42 @@
+site_name: PatternAI Docs
+site_url: https://patternailabs.github.io/patternai-docs/
+site_description: Documentation for the Pattern AI Agent Build Project
+theme:
+  name: material
+  palette:
+    - scheme: Default
+      primary: "rgb(9, 12, 45)"
+      accent: "rgb(9, 12, 45)"
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - scheme: slate
+      primary: "black"
+      accent: "black"
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - pymdownx.details
+  - pymdownx.superfences
+extra_css:
+  - styles/custom.css
+nav:
+  - Home: index.md
+  - Setup:
+      - Prerequisites: prerequisites.md
+      - Installation Guide: setup.md
+      - Support:
+          - User: user.md
+          - Developer Guide: developer.md
+          - Integration: whatsapp.md
+plugins:
+  - search
+  - minify:
+      minify_html: true
