@@ -33,7 +33,7 @@ nav:
       - Prerequisites: prerequisites.md
       - Installation Guide: setup.md
       - Support:
-          - User: user.md
+          - Agent Build: agent-build.md
           - Developer Guide: developer.md
           - Integration: whatsapp.md
 plugins:
