@@ -1,5 +1,5 @@
 site_name: PatternAI Docs
-site_url: https://patternailabs.github.io/patternai-docs/
+site_url: https://patternailabs.github.io/docs/
 site_description: Documentation for the Pattern AI Agent Build Project
 theme:
   name: material

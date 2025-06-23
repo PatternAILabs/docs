@@ -3,7 +3,7 @@
   <div class="hero-text">
     <h1>PatternAI Agent - Build</h1>
     <p class="slogan">Streaming solutions for rising needs.</p>
-    <a href="user/">
+    <a href="agent-build/">
       <button>Get Started</button>
     </a>
   </div>
