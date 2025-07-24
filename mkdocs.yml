@@ -25,6 +25,8 @@ markdown_extensions:
   - attr_list
   - pymdownx.details
   - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.mark
 extra_css:
   - styles/custom.css
 nav:

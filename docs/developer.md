@@ -11,9 +11,9 @@ The system integrates multiple Speech-to-Text (STT) and Text-to-Speech (TTS) ser
 To understand the operation of the PatternAI Agent, this section will guide through the process flow, from the initial receipt of a user's request to the generation and delivery of a response. Key system components and their interactions will be unpacked.
 
 ### The Foundation {: .sub-heading}
-- `/app`: This directory houses the core application logic and services that drive the agent's functionality. It includes:
+- **[/app](#){ style="color:rgb(7,10,39);"}** : This directory houses the core application logic and services that drive the agent's functionality. It includes:
 
-  `/services/`: encapsulates the core AI processing logic of the PatternAI Agent. It defines abstract interfaces and provides concrete implementations for key AI processing capabilities.
+  **[/services](#){ style="color:rgb(7,10,39);"}** : encapsulates the core AI processing logic of the PatternAI Agent. It defines abstract interfaces and provides concrete implementations for key AI processing capabilities.
 
   These capabilities are organized into the following sub-modules:
 
@@ -21,28 +21,59 @@ To understand the operation of the PatternAI Agent, this section will guide thro
     ```
     services/
     ├── llm/
-    │   ├── __init__.py              # Factory: creates LLM handler (OpenRouter/custom)
-    │   ├── base_handler.py          # Abstract base class for LLMs (defines prompt + interface)
-    │   └── openrouter_handler.py    # Implementation using OpenRouter API
+    │   ├── __init__.py                # Factory: creates LLM handler (OpenRouter/custom)
+    │   ├── base_handler.py            # Abstract base class for LLMs (defines prompt + interface)
+    │   ├── openrouter_handler.py      # Implementation using OpenRouter API
+    │   ├── router_handler.py          # Routes queries to tools based on user intent
+    │   ├── conversation_history.py    # Maintains chat history with truncation logic
+    │   ├── prompts/                   # Prompt management logic (Langfuse or static)
+    │   ├── tools/                     # Tool execution logic and OpenAI-compatible tool specs
+    │   └── validators/                # Streaming and final response validation logic
     │
     ├── stt/
-    │   ├── __init__.py              # Factory: selects STT engine
-    │   ├── base_stt_handler.py      # Abstract base class for STT services
-    │   ├── whisper_stt.py           # STT via OpenAI Whisper API
-    │   ├── google_stt.py            # STT via Google Cloud Speech API
-    │   └── elevenlabs_stt.py        # STT via ElevenLabs API
+    │   ├── __init__.py                # Factory: selects STT engine
+    │   ├── base_stt_handler.py        # Abstract base class for STT services
+    │   ├── whisper_stt.py             # STT via OpenAI Whisper API
+    │   ├── google_stt.py              # STT via Google Cloud Speech API
+    │   ├── elevenlabs_stt.py          # STT via ElevenLabs API
+    │   └── stt_validation.py          # Validation and metrics for STT transcription
     │
     └── tts/
-        ├── __init__.py              # Factory: selects TTS engine
-        ├── base_tts_handler.py      # Abstract TTS base class, defines text-to-audio interface
-        └── edge_tts.py              # TTS implementation using Microsoft Edge TTS
+        ├── __init__.py               # Factory: selects TTS engine
+        ├── base_tts_handler.py       # Abstract TTS base class, defines text-to-audio interface
+        ├── edge_tts.py               # TTS implementation using Microsoft Edge TTS
+        └── tts_validation.py         # Validation for text-to-speech output 
     ```
 
-  `/llm`: provides a flexible interface for interacting with various Large Language Models (LLMs) through OpenRouter, with support for prompt management and model fallback mechanisms. The module is designed to be extensible, allowing for easy integration of additional LLM providers in the future.
+**[/llm](#){ style="color:rgb(7,10,39);"}** : orchestrates intelligent conversation flow through a sophisticated multi-layered architecture that transforms user intent into contextual, validated responses.Rather than simply connecting to language models, this module implements a complete reasoning pipeline that routes requests, maintains conversation context, validates outputs, and ensures reliable agent behavior.
 
-  `/stt`: a unified interface for converting speech to text using multiple cloud providers. It supports Whisper (OpenAI), Google Cloud Speech-to-Text, and ElevenLabs services through a common abstraction layer.
+#### LLM Service: Multi-Agent Architecture {: .sub-heading}
+##### **Tier 1 : Intent Recognition & Tool Selection**
+How does the system know where to send a request like "I need donuts"?
 
-  `/tts`: a standardized interface for converting text to speech using various synthesis engines. Currently implemented with Microsoft Edge's TTS service, the module is designed for easy extensibility to support additional providers.
+It’s handled by `router_handler.py/` and `tools.py/` using a dedicated LLM as an intelligent dispatcher. Using the configured LLM, it analyzes user intent and selects the most appropriate specialized tool from the available arsenal defined in tools_config.yaml. This isn't simple keyword matching - the router understands context, recognizing the difference between "I need coffee" **(shopping intent)** and "I want to travel to coffee county" **(travel intent)**. The routing system leverages a structured approach:
+
+- Analyzes user input against tool descriptions from **ROUTER_SYSTEM_PROMPT**
+- returns JSON-formatted routing decisions via `RouterHandler.route()`
+- `initialize_tools()` creates bidirectional mappings between tools and agents
+- Tools operate through unified interface `base_tool.py` with consistent behavior
+- Each tool knows its agent ID, enabling seamless transition to specialized processing
+
+!!! note "Note"
+    New domains can be added by simply creating new tool classes and updating the YAML configuration
+
+##### **Tier 2 : Contextual Conversation Management**
+Before any response generation begins, the layer `conversation_history.py/` enriches the interaction with memory. The ConversationHistory class maintains an intelligent sliding window of past interactions, applying both message count limits and token-based truncation to optimize context while preserving memory efficiency.
+
+##### **Tier 3 : Response Generation & Built-in Validation**
+This layer orchestrates LLM interaction through OpenRouterHandler, serving as the bridge between the internal agent system and external language models. This handler manages the complete response lifecycle:
+This handler manages the complete response lifecycle with integrated prompt management, streaming generation, real-time Pydantic validation of all streaming LLM responses to ensure structured output formatting and type safety.
+
+
+
+**[/stt](#){ style="color:rgb(7,10,39);"}** : a unified interface for converting speech to text using multiple cloud providers. It supports Whisper (OpenAI), Google Cloud Speech-to-Text, and ElevenLabs services through a common abstraction layer.
+
+**[/tts](#){ style="color:rgb(7,10,39);"}** : a standardized interface for converting text to speech using various synthesis engines. Currently implemented with Microsoft Edge's TTS service, the module is designed for easy extensibility to support additional providers.
 
 ### Service Traversal {: .sub-heading}
 The system operates through a series of coordinated steps that leverage the abstract interfaces and factory pattern to process user requests.
@@ -56,7 +87,7 @@ After initialization, the system interacts with each service through its abstrac
 
 The LLM processing and text-to-speech (TTS) flows follow a similar architectural pattern.
 
-- For LLMs, the system uses `create_llm_handler` to instantiate an `OpenRouterHandler`, which manages prompt handling, fallback mechanisms, and LLM interactions.
+- For LLMs, the system uses create_llm_handler to instantiate an OpenRouterHandler, which acts as the gateway to OpenRouter-backed language models. It supports prompt injection, conversation context, real-time streaming, and structured response validation, as detailed in the LLM service section above.
 - For TTS, the `create_tts_service` factory function initializes an EdgeTTS service that converts text input into audio bytes using the Microsoft Edge TTS engine.
 
 While models provide services by default, their performance can vary, a topic we'll explore using Langfuse later. Keeping that in mind, we've built a framework that allows developers to integrate models as they please.
@@ -78,25 +109,57 @@ service_registry = {
 
 Also we've optimized performance by implementing factory functions with LRU caching and custom cache logging decorators, preventing redundant service creation when the same configuration is requested multiple times. This allows dynamic, efficient, and configurable creation of service instances at runtime.
 
-`/tests/`: This directory contains unit and integration tests for the application logic, ensuring the reliability and correctness of the core functionalities. Tests are executed using the pytest framework.
+**[/tests](#){ style="color:rgb(7,10,39);"}** : This directory contains unit and integration tests for the application logic, ensuring the reliability and correctness of the core functionalities. Tests are executed using the pytest framework.
 
 To run all tests, use the following command:
 
 ```bash
 poetry run pytest
 ```
-
 #### Test Structure {: .sub-heading}
 
-The `tests/` directory is organized by module, with each file typically containing tests for a specific part of the application:
+The **[/tests](#){ style="color:rgb(7,10,39);"}** directory is organized by module, with each file typically containing tests for a specific part of the application:
 
 - `test_llm.py`: Contains tests for the Large Language Model (LLM) integration, including schema validation and semantic comparison of LLM outputs
 - `test_stt.py`: Contains tests for the Speech-to-Text (STT) service, covering different STT providers and transcription functionality
 - `test_tts.py`: Contains tests for the Text-to-Speech (TTS) service, including service creation, configuration, and speech synthesis
 - `conftest.py`: Provides helper functions and fixtures used across multiple test files. For example, the `cleaned_json` function normalizes JSON outputs from LLMs, which is crucial for testing LLM responses
 
+#### Refine & Tune {: .sub-heading}
+
+Creating safer, more humane conversational agents meant taking on the responsibility of ensuring responses remain fair, respectful, and trustworthy — not just intelligent.
+
+With that in mind,
+**[/filters](#){ style="color:rgb(7,10,39);"}** : Provides a modular text filtering framework that enforces ethical and contextual guardrails for agent outputs. It is responsible for detecting and handling:  
+
+- Personally Identifiable Information (PII)  
+- Biased language  
+- Profanity  
+
+Every filter is pluggable and configurable, allowing easy customization per agent use case.
+
+##### Design Philosophy {: .sub-heading}
+Filters follow the Strategy Pattern, built on a shared `BaseFilter` interface. Each filter implements an `apply(text: str) -> str` method, ensuring consistency and interchangeability.
+
+```python
+class BaseFilter(ABC):
+    @abstractmethod
+    def apply(self, text: str) -> str:
+        …
+```
+!!! note "Note"
+    This design allows us to dynamically register and apply filters, configured declaratively through a YAML file.
+
+##### Rule Engine {: .sub-heading}
+At runtime, the RuleEngine loads filters defined in configs.yaml, instantiates them, and applies them sequentially to incoming text enabling  centralized control,  easy reordering or disabling of filters and detailed logging of filter application.
+##### Filters in Use 
+- BiasFilter – Replaces predefined biased terms with neutral ones using regex-based replacements.
+- PIIFilter – Detects and anonymizes PII in plain text and json using presidio, with field-specific handling for dates and locations.
+- ProfanityFilter – Censors offensive language using both regex and the better_profanity library.
+
+
 ### Versatility and Modularity {: .sub-heading}
-- `/clients`: provides a flexible framework for implementing domain-specific conversational agents with WhatsApp integration. Each client gets its own isolated configuration and implementation while sharing core AI services (STT/TTS/LLM).
+- **[/clients](#){ style="color:rgb(7,10,39);"}** : provides a flexible framework for implementing domain-specific conversational agents with WhatsApp integration. Each client gets its own isolated configuration and implementation while sharing core AI services (STT/TTS/LLM).
 
 #### API Endpoints {: .sub-heading}
 With the core services for STT, TTS, and LLM dynamically monitored through our modular framework, these capabilities are made accessible to client applications via a set of clean, RESTful API endpoints. These endpoints handle everything from speech transcription to language and audio generation, providing a unified interface for seamless multi-modal conversations.
@@ -114,7 +177,7 @@ The service exposes the following endpoints:
 Verify if the service is running:
 
 ```bash
-curl -X POST "http://localhost:5000/health"
+curl -X GET "http://localhost:5000/health"
 ```
 
 **Response:**
@@ -131,7 +194,7 @@ Convert audio to text using the `/stt` endpoint.
 curl -X POST "http://localhost:5000/stt" \
   -H "Content-Type: application/octet-stream" \
   -H "STT-Model: whisper" \
-  --data-binary @audio_file.webm
+  --data-binary @"audio_file.webm"
 ```
 
 **Available STT models:**

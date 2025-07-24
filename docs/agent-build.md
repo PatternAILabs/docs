@@ -75,7 +75,7 @@ Only the data needed to process your current request is temporarily stored. For 
 For now, only voice and text messages are supported. Visual input features may be added in future versions.
 
 #### 7. Can I list places I want to visit and have the agent plan a route?
-Yes! You can say: [Content appears to be incomplete in source document]
+
 
 #### 8. What if my voice message had a mistake? Can I correct it?
 No worries! You can simply say "correct that" or resend the message — the assistant will wait for your confirmation before moving on.
