@@ -1,6 +1,9 @@
 site_name: PatternAI Labs Docs
-site_url: https://patternailabs.github.io/
-site_description: Documentation for the Pattern AI Agent Build Project
+site_url: http://localhost:8002/
+site_description: Documentation for the Pattern AI Agent Test Project
+extra:
+  homepage: http://localhost:8000/
+
 theme:
   name: material
   palette:
@@ -27,17 +30,16 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.inlinehilite
   - pymdownx.mark
+  - md_in_html
 extra_css:
   - styles/custom.css
 nav:
   - Home: index.md
-  - Setup:
-      - Prerequisites: prerequisites.md
-      - Installation Guide: setup.md
-      - Support:
-          - Agent Build: agent-build.md
-          - Developer Guide: developer.md
-          - Integration: whatsapp.md
+  - Projects:
+      - Back to projects: projects.md
+      - Agent Test:
+          - Installation Guide: setup.md
+          - Agent Test: developer.md
 plugins:
   - search
   - minify:
