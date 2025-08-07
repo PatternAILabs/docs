@@ -1,9 +1,4 @@
-site_name: PatternAI Labs Docs
-site_url: http://localhost:8002/
-site_description: Documentation for the Pattern AI Agent Test Project
-extra:
-  homepage: http://localhost:8000/
-
+site_name: Agent Test
 theme:
   name: material
   palette:
@@ -31,16 +26,10 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.mark
   - md_in_html
+
 extra_css:
   - styles/custom.css
+
 nav:
-  - Home: index.md
-  - Projects:
-      - Back to projects: projects.md
-      - Agent Test:
-          - Installation Guide: setup.md
-          - Agent Test: developer.md
-plugins:
-  - search
-  - minify:
-      minify_html: true
+  - Installation Guide: setup.md
+  - Agent Test: index.md

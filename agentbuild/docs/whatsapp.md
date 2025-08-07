@@ -83,8 +83,10 @@ This ensures the system degrades gracefully under failure conditions.
 
 ### Logging & Observability {: .sub-heading}
 
-- Centralized logging via **Cloud Logging**  
-  Tracks:
+- Centralized logging via Cloud Logging
+
+    Tracks :-
+
   - Incoming webhook events  
   - AI processing  
   - Outgoing replies  
