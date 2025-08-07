@@ -1,0 +1,44 @@
+site_name: PatternAI Labs Docs
+site_url: http://localhost:8000/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: "rgb(9, 12, 45)"
+      accent:  "rgb(9, 12, 45)"
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - scheme: slate
+      primary: black
+      accent:  black
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.mark
+  - md_in_html
+
+extra_css:
+  - styles/custom.css
+
+nav:
+  - Home: index.md
+  - Agent Build: '!include ./agentbuild/mkdocs.yml'
+  - Agent Test:  '!include ./agenttest/mkdocs.yml'
+
+plugins:
+  - search
+  - monorepo
+  - minify:
+      minify_html: true
